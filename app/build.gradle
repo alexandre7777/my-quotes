@@ -20,6 +20,20 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    flavorDimensions "env"
+    productFlavors {
+        integ {
+            // Assigns this product flavor to the "mode" flavor dimension.
+            dimension "env"
+            buildConfigField "String", "SERVER_URL", "\"https://favqs.com/\""
+        }
+
+        prod {
+            dimension "env"
+            buildConfigField "String", "SERVER_URL", "\"https://favqs.com/\""
+        }
+    }
 }
 
 dependencies {
@@ -30,4 +44,12 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    implementation "com.squareup.retrofit2:retrofit:2.3.0"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:2.3.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.3.0"
+
+    implementation "io.reactivex.rxjava2:rxandroid:2.0.2"
+
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.1'
 }

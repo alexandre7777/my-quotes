@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My quotes</string>
+    <string name="login_or_email">login or email</string>
+    <string name="password">password</string>
+    <string name="submit">Submit</string>
+    <string name="PREF_USER_SESSION">com.alexandre.myquotes.PREF_USER_SESSION</string>
 </resources>
