@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">My quotes</string>
+    <string name="login_or_email">login or email</string>
+    <string name="password">password</string>
+    <string name="submit">Submit</string>
+    <string name="login_failed">Login failed</string>
+    <string name="network_error">Network error</string>
+    <string name="USER_SESSION">USER-SESSION</string>
+    <string name="USER_LOGIN">USER-LOGIN</string>
+    <string name="nb_of_fav_quotes">Number of fav quotes</string>
+    <string name="login_image">login image</string>
+</resources>
