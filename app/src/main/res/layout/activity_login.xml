@@ -16,8 +16,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.361"
-        android:text="HealsyTestUser"/>
+        app:layout_constraintVertical_bias="0.361"/>
 
     <EditText
         android:id="@+id/ed_password"
@@ -27,8 +26,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:hint="@string/password"
-        android:text="HealsyTestUser"/>
+        android:hint="@string/password"/>
 
     <Button
         android:id="@+id/submit"

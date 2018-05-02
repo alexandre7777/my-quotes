@@ -1,6 +1,5 @@
 package com.alexandre.myquotes.view.login
 
-import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -16,6 +15,9 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_login.*
 
+/**
+ * First activity to log the user
+ */
 class LoginActivity : AppCompatActivity() {
 
     private var disposable: Disposable? = null
@@ -40,18 +42,14 @@ class LoginActivity : AppCompatActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        { result -> Toast.makeText(this, result.userToken, Toast.LENGTH_SHORT).show()
-                            Log.d("TAG", result.userToken)
-                            val sharedPref = getPreferences(Context.MODE_PRIVATE)
-                            with (sharedPref.edit()) {
-                                putString(getString(R.string.PREF_USER_SESSION), result.userToken)
-                                apply()
-                            }
+                        { result ->
                             val intent = Intent(this, QuotesListActivity::class.java)
+                            intent.putExtra(getString(R.string.USER_SESSION), result.userToken)
+                            intent.putExtra(getString(R.string.USER_LOGIN), result.login)
                             startActivity(intent)
                         },
-                        { error -> Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show()
-                            Log.d("TAG", error.message)}
+                        { error -> Toast.makeText(this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show()
+                            Log.d("Network", error.message)}
                 )
     }
 
