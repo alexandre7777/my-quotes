@@ -32,6 +32,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         submit.setOnClickListener{
+            submit.isEnabled = false
             beginLogin()
         }
     }
@@ -43,12 +44,16 @@ class LoginActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         { result ->
-                            val intent = Intent(this, QuotesListActivity::class.java)
-                            intent.putExtra(getString(R.string.USER_SESSION), result.userToken)
-                            intent.putExtra(getString(R.string.USER_LOGIN), result.login)
-                            startActivity(intent)
+                            if(result.userToken != null && result.login != null) {
+                                val intent = Intent(this, QuotesListActivity::class.java)
+                                intent.putExtra(getString(R.string.USER_SESSION), result.userToken)
+                                intent.putExtra(getString(R.string.USER_LOGIN), result.login)
+                                startActivity(intent)
+                            }
+                            submit.isEnabled = true
                         },
                         { error -> Toast.makeText(this, getString(R.string.login_failed), Toast.LENGTH_SHORT).show()
+                            submit.isEnabled = true
                             Log.d("Network", error.message)}
                 )
     }
