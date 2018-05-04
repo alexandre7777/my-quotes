@@ -9,4 +9,15 @@
     <string name="USER_LOGIN">USER-LOGIN</string>
     <string name="nb_of_fav_quotes">Number of fav quotes</string>
     <string name="login_image">login image</string>
+
+    <string name="dialogue">Is a dialogue</string>
+    <string name="not_dialogue">Is not a dialogue</string>
+    <string name="private_quote">Is private</string>
+    <string name="not_private_quote">Is not private</string>
+
+    <string name="tags">Tags : %s</string>
+    <string name="favorites_count">Favorites count : %d</string>
+    <string name="upvotes_count">Upvotes count : %d</string>
+    <string name="downvotes_count">Downvotes count : %d</string>
+    <string name="id">Id : %d</string>
 </resources>
