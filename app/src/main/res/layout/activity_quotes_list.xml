@@ -46,4 +46,15 @@
         android:contentDescription="@string/login_image"/>
 
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/quotes_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_user_nb_fav" />
+
 </android.support.constraint.ConstraintLayout>
