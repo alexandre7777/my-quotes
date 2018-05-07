@@ -2,6 +2,7 @@ package com.alexandre.myquotes.view.quoteslist
 
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
@@ -9,7 +10,11 @@ import android.widget.Toast
 import com.alexandre.myquotes.R
 import com.alexandre.myquotes.data.webservice.QuotesService
 import com.alexandre.myquotes.data.webservice.UserInfoService
+import com.alexandre.myquotes.database.QuotesDataBase
+import com.alexandre.myquotes.model.Quote
+import com.alexandre.myquotes.model.QuoteData
 import com.alexandre.myquotes.view.quoteslist.list.QuoteAdapter
+import com.alexandre.myquotes.worker.DbWorkerThread
 import com.bumptech.glide.Glide
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -29,6 +34,12 @@ class QuotesListActivity  : AppCompatActivity() {
 
     private lateinit var adapter: QuoteAdapter
 
+    private var mDb: QuotesDataBase? = null
+
+    private lateinit var mDbWorkerThread: DbWorkerThread
+
+    private val mUiHandler = Handler()
+
     private val userInfoService by lazy {
         UserInfoService.create()
     }
@@ -40,6 +51,11 @@ class QuotesListActivity  : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_quotes_list)
+
+        mDbWorkerThread = DbWorkerThread("dbWorkerThread")
+        mDbWorkerThread.start()
+
+        mDb = QuotesDataBase.getInstance(this)
 
         quotesListViewModel = ViewModelProviders.of(this).get(QuotesListViewModel::class.java)
 
@@ -77,6 +93,7 @@ class QuotesListActivity  : AppCompatActivity() {
                         { result ->
                             quotesListViewModel.userInfo = result
                             displayUserInfo()
+                            updateUserDataInDb(result.pic_url, result.public_favorites_count, result.login)
 
                         },
                         { error -> Toast.makeText(this, getText(R.string.network_error), Toast.LENGTH_SHORT).show()
@@ -94,6 +111,7 @@ class QuotesListActivity  : AppCompatActivity() {
                         { result ->
                             quotesListViewModel.userQuotes = result
                             displayUserQuotes()
+                            insertUserDataInDb(result.quotes, userName)
                         },
                         { error -> Toast.makeText(this, getText(R.string.network_error), Toast.LENGTH_SHORT).show()
                             Log.d("Network", "Error : " + error.message)}
@@ -120,5 +138,25 @@ class QuotesListActivity  : AppCompatActivity() {
     private  fun displayUserQuotes() {
         adapter = QuoteAdapter(quotesListViewModel.userQuotes?.quotes)
         quotes_list.adapter = adapter
+    }
+
+    private fun insertUserDataInDb(quotes : ArrayList<Quote>, login : String) {
+
+        for (quote in quotes) {
+            val quoteData = QuoteData(quote.id, quote.dialogue, quote.private, quote.tags.joinToString(), quote.url, quote.favorites_count, quote.upvotes_count, quote.downvotes_count, quote.author, quote.author_permalink, quote.body, 0, login)
+            val task = Runnable { mDb?.quoteDataDao()?.insert(quoteData) }
+            mDbWorkerThread.postTask(task)
+        }
+    }
+
+    private fun updateUserDataInDb(urlPicto : String, favCount : Int, login : String) {
+        val task = Runnable { mDb?.userDataDao()?.updateUserByLogin(urlPicto, favCount, login) }
+        mDbWorkerThread.postTask(task)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        QuotesDataBase.destroyInstance()
+        mDbWorkerThread.quit()
     }
 }
