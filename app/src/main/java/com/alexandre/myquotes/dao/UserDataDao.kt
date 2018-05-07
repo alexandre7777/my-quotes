@@ -15,6 +15,9 @@ interface UserDataDao {
     @Query("SELECT * from userData WHERE login = :login AND password = :password")
     fun getByLoginAndPassword(login : String, password : String): List<UserData>
 
+    @Query("SELECT * from userData WHERE login = :login")
+    fun getByLogin(login : String): List<UserData>
+
     @Insert(onConflict = REPLACE)
     fun insert(userData: UserData)
 

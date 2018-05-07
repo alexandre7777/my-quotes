@@ -83,7 +83,7 @@ class LoginActivity : AppCompatActivity() {
         }
         else
         {
-            fetchWeatherDataFromDb(ed_login.text.toString().toLowerCase(), hashString("SHA-256", ed_password.text.toString().toLowerCase()))
+            fetchUserDataFromDb(ed_login.text.toString().toLowerCase(), hashString("SHA-256", ed_password.text.toString().toLowerCase()))
         }
     }
 
@@ -92,7 +92,7 @@ class LoginActivity : AppCompatActivity() {
         disposable?.dispose()
     }
 
-    private fun fetchWeatherDataFromDb(login : String, password : String) {
+    private fun fetchUserDataFromDb(login : String, password : String) {
         val task = Runnable {
             val userData =
                     mDb?.userDataDao()?.getByLoginAndPassword(login, password)
@@ -103,6 +103,7 @@ class LoginActivity : AppCompatActivity() {
                     val intent = Intent(this, QuotesListActivity::class.java)
                     intent.putExtra(getString(R.string.USER_LOGIN), login)
                     startActivity(intent)
+                    submit.isEnabled = true
                 }
             })
         }

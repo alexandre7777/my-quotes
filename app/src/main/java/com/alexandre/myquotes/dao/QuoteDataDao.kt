@@ -12,6 +12,9 @@ interface QuoteDataDao {
     @Query("SELECT * from quoteData")
     fun getAll(): List<QuoteData>
 
+    @Query("SELECT * from quoteData WHERE login = :login")
+    fun getAllByLogin(login : String): List<QuoteData>
+
     @Insert(onConflict = REPLACE)
     fun insert(quoteData: QuoteData)
 

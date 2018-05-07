@@ -4,6 +4,7 @@
     <string name="password">password</string>
     <string name="submit">Submit</string>
     <string name="login_failed">Login failed</string>
+    <string name="missing_offline_data">Missing offline data</string>
     <string name="network_error">Network error</string>
     <string name="USER_SESSION">USER-SESSION</string>
     <string name="USER_LOGIN">USER-LOGIN</string>
