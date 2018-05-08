@@ -1,6 +1,8 @@
 package com.alexandre.myquotes.view.quoteslist.list
 
 import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +10,9 @@ import com.alexandre.myquotes.R
 import com.alexandre.myquotes.model.Quote
 import kotlinx.android.synthetic.main.quote_item.view.*
 
-class QuoteAdapter(private val quotes: ArrayList<Quote>?) : RecyclerView.Adapter<QuoteAdapter.ViewHolder>() {
+class QuoteAdapter(private val quotes: ArrayList<Quote>?, updatePosition: (fromPosition: Int, toPosition: Int) -> Unit) : RecyclerView.Adapter<QuoteAdapter.ViewHolder>() {
+    val updatePosition = updatePosition
+
     override fun getItemCount(): Int {
         if (quotes != null) {
             return quotes.size
@@ -21,6 +25,14 @@ class QuoteAdapter(private val quotes: ArrayList<Quote>?) : RecyclerView.Adapter
         val inflatedView = LayoutInflater.from(parent.context)
                 .inflate(R.layout.quote_item, parent, false)
         return ViewHolder(inflatedView)
+    }
+
+    fun onItemMove(fromPosition: Int?, toPosition: Int?): Boolean {
+        if (fromPosition != null && toPosition != null) {
+            notifyItemMoved(fromPosition, toPosition)
+            updatePosition.invoke(fromPosition, toPosition)
+        }
+        return true
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -62,6 +74,34 @@ class QuoteAdapter(private val quotes: ArrayList<Quote>?) : RecyclerView.Adapter
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
+
+    }
+
+    class QuoteTouchHelperCallback(adapter: QuoteAdapter) : ItemTouchHelper.Callback() {
+
+        private val mAdapter: QuoteAdapter = adapter
+
+        override fun isLongPressDragEnabled(): Boolean {
+            return true
+        }
+
+        override fun isItemViewSwipeEnabled(): Boolean {
+            return false
+        }
+
+        override fun getMovementFlags(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?): Int {
+            val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+            val swipeFlags = ItemTouchHelper.START or ItemTouchHelper.END
+            return ItemTouchHelper.Callback.makeMovementFlags(dragFlags, swipeFlags)
+        }
+
+        override fun onMove(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?, target: RecyclerView.ViewHolder?): Boolean {
+            mAdapter.onItemMove(viewHolder?.getAdapterPosition(), target?.getAdapterPosition());
+            return true;
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder?, direction: Int) {
+        }
 
     }
 }

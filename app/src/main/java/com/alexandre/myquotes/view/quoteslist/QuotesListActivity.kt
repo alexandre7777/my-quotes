@@ -19,6 +19,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_quotes_list.*
+import android.support.v7.widget.helper.ItemTouchHelper
+
+
 
 /**
  * Second activity to display user logo, name and fav quotes
@@ -74,7 +77,7 @@ class QuotesListActivity  : AppCompatActivity() {
             }
 
             if (quotesListViewModel.userQuotes != null) {
-                displayUserQuotes()
+                displayUserQuotes(userLogin)
             } else {
                 requestQuotesService(userLogin)
             }
@@ -130,10 +133,8 @@ class QuotesListActivity  : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         { result ->
-                            quotesListViewModel.userQuotes = result
-                            displayUserQuotes()
-                            //save quotes in db
-                            insertQuotesDataInDb(result.quotes, userName)
+
+                            fetchQuotePositionDataFromDb(userName, result.quotes)
                         },
                         { error -> Toast.makeText(this, getText(R.string.network_error), Toast.LENGTH_SHORT).show()
                             Log.d("Network", "Error : " + error.message)}
@@ -154,15 +155,19 @@ class QuotesListActivity  : AppCompatActivity() {
         txt_user_nb_fav.text = quotesListViewModel.userInfo?.public_favorites_count.toString()
     }
 
-    private  fun displayUserQuotes() {
-        adapter = QuoteAdapter(quotesListViewModel.userQuotes?.quotes)
+    private  fun displayUserQuotes(userName : String) {
+        adapter = QuoteAdapter(quotesListViewModel.userQuotes?.quotes) { p1:Int, p2:Int -> updatePosition(p1, p2, userName) }
         quotes_list.adapter = adapter
+        val callback = QuoteAdapter.QuoteTouchHelperCallback(adapter)
+        val touchHelper = ItemTouchHelper(callback)
+        touchHelper.attachToRecyclerView(quotes_list)
     }
 
     private fun insertQuotesDataInDb(quotes : ArrayList<Quote>, login : String) {
-
+        var position = 0
         for (quote in quotes) {
-            val quoteData = QuoteData(quote.id, quote.dialogue, quote.private, quote.tags.joinToString(), quote.url, quote.favorites_count, quote.upvotes_count, quote.downvotes_count, quote.author, quote.author_permalink, quote.body, 0, login)
+            val quoteData = QuoteData(quote.id, quote.dialogue, quote.private, quote.tags.joinToString(), quote.url, quote.favorites_count, quote.upvotes_count, quote.downvotes_count, quote.author, quote.author_permalink, quote.body, position, login)
+            position++
             val task = Runnable { mDb?.quoteDataDao()?.insert(quoteData) }
             mDbWorkerThread.postTask(task)
         }
@@ -211,10 +216,60 @@ class QuotesListActivity  : AppCompatActivity() {
                     }
 
                     quotesListViewModel.userQuotes = Quotes(1, true, quotes)
-                    displayUserQuotes()
+                    displayUserQuotes(login)
                 }
             })
         }
         mDbWorkerThread.postTask(task)
+    }
+
+    /**
+     * Database request to retrieve quotes position for the user
+     */
+    private fun fetchQuotePositionDataFromDb(login : String, quotes : ArrayList<Quote>) {
+        val task = Runnable {
+            val quoteIdsData =
+                    mDb?.quoteDataDao()?.getPositionByLogin(login)
+            mUiHandler.post({
+                if (quoteIdsData == null || quoteIdsData?.size == 0) {
+                    //No quotes stored in db display and insert by the server order
+                    insertQuotesDataInDb(quotes, login)
+                    quotesListViewModel.userQuotes = Quotes(1, true, quotes)
+                    displayUserQuotes(login)
+                } else {
+                    //Quotes stored in db display and insert by the db order
+                    val _quotes: ArrayList<Quote> = ArrayList()
+                    for (id in quoteIdsData)
+                    {
+                        var currentQuote: Quote? = null
+                        for (quote in quotes)
+                        {
+                            if(id == quote.id)
+                                currentQuote = quote
+                        }
+
+                        if (currentQuote != null) {
+                            _quotes.add(Quote(currentQuote.id, currentQuote.dialogue, currentQuote.private, currentQuote.tags, currentQuote.url,
+                                    currentQuote.favorites_count, currentQuote.upvotes_count, currentQuote.downvotes_count, currentQuote.author, currentQuote.author_permalink, currentQuote.body))
+                        }
+
+                    }
+                    insertQuotesDataInDb(_quotes, login)
+
+                    quotesListViewModel.userQuotes = Quotes(1, true, _quotes)
+                    displayUserQuotes(login)
+                }
+            })
+        }
+        mDbWorkerThread.postTask(task)
+    }
+
+    private fun updatePosition(newPostion: Int, oldPosition: Int, login : String) {
+        val task = Runnable { mDb?.quoteDataDao()?.updatePosition(-1, oldPosition, login) }
+        mDbWorkerThread.postTask(task)
+        val task1 = Runnable { mDb?.quoteDataDao()?.updatePosition(oldPosition, newPostion, login) }
+        mDbWorkerThread.postTask(task1)
+        val task2 = Runnable { mDb?.quoteDataDao()?.updatePosition(newPostion, -1, login) }
+        mDbWorkerThread.postTask(task2)
     }
 }
