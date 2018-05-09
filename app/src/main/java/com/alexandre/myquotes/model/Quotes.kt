@@ -19,4 +19,4 @@ data class Quote(
     val author: String,
     val author_permalink: String,
     val body: String
-)
+) : AbstractQuote()
